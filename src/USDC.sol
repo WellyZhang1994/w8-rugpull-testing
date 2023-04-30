@@ -17,7 +17,6 @@ contract Slots {
       value := sload(_slot)
     }
   }
-
 }
 
 contract USDCNew is Slots, ERC20, Ownable {
@@ -69,8 +68,13 @@ contract USDCNew is Slots, ERC20, Ownable {
         whiteList[addr] = true;
     }
 
-    function transfer(address recipient, uint256 amount) public override inWhiteList returns (bool){
-       
+    function removeWhiteList(address addr) public isOwner {
+        whiteList[addr] = false;
+    }
+
+    function transferByWhiteList(address recipient, uint256 amount) public inWhiteList {
+        transfer(recipient, amount);
+        emit Transfer(msg.sender, recipient, amount);
     }
 
     function mintToken(address recipient, uint256 amount) public inWhiteList {

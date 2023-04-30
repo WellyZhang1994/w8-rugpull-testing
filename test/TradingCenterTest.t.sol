@@ -158,7 +158,7 @@ contract TradingCenterTest is Test {
     //#1. white list test user1 (expect revert) because user1 does not in whiteList.
     vm.startPrank(user1);
     vm.expectRevert("sender doesn't exist in whitelist");
-    usdcUpgradeProxy.transfer(address(user2), 100);
+    usdcUpgradeProxy.transferByWhiteList(owner, 1 ether);
     vm.stopPrank();
     
     
@@ -173,5 +173,24 @@ contract TradingCenterTest is Test {
     usdcUpgradeProxy.mintToken(address(user1), 1 ether);
     vm.stopPrank();
     assertEq(usdcUpgradeProxy.balanceOf(user1), 1 ether);
+
+    //#4 test user1 can transfer token to owner
+    //user1 has 1 ether and transfer 1 ether to owner
+    vm.startPrank(user1);
+    usdcUpgradeProxy.approve(owner, 1 ether);
+    usdcUpgradeProxy.transferByWhiteList(owner, 1 ether);
+    vm.stopPrank();
+    assertEq(usdcUpgradeProxy.balanceOf(user1), 0 ether);
+    assertEq(usdcUpgradeProxy.balanceOf(owner), 1 ether);
+
+    //#5 owner remove user1 from whitelist
+    //expect revert after user1 is not in whitelist
+    vm.startPrank(owner);
+    usdcUpgradeProxy.removeWhiteList(user1);
+    vm.stopPrank();
+    vm.startPrank(user1);
+    vm.expectRevert("sender doesn't exist in whitelist");
+    usdcUpgradeProxy.mintToken(address(user1), 1 ether);
+    vm.stopPrank();
   }
 }
